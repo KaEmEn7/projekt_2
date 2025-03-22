@@ -1,0 +1,4 @@
+- Skore je zapisovano do results.txtx
+- moznost nove hry po dohrani,
+- casovac pocita cas
+- pocitadlo pokusu
