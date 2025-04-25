@@ -8,7 +8,6 @@ email: kamilmachuj@gmail.com
 import random
 import time
 
-start_time = None
 end_time = None
 #counter = 0
 
@@ -20,30 +19,30 @@ sentences_1 = ["Hi there, I've generated a random 4 digit number for you.",
             ]
 
 # vypocet max delky jedne vety pro zarovnani "-"
-def max_lenght(sentences):
+def max_length(sentences):
     return max(len(sentence) for sentence in sentences)
 
-
 # formatovany vypis kazde vety, podle max. delky
-def format_senteces(sentences, max_lenght):
+def format_senteces(sentences, max_length):
     for sentence in sentences:
         print(sentence)
-        print("-" * max_lenght)
+        print("-" * max_length)
 
-format_senteces(sentences=sentences_1, max_lenght=max_lenght(sentences_1))
+format_senteces(sentences=sentences_1, max_length=max_length(sentences_1))
 
 # fce pro zapis historickych dat ze hry
 def save_record(player_name, duration_time, counter):
+    """Ulozi statistiky: Jmeno, Cas, Pocet pokusu do txt souboru.
+    """
     with open("results.txt", "a") as file:
         file.write(f"Player: {player_name}, \t\tTime: {duration_time}, \t\tGuesses: {counter}\n")
 
-"""
--   program dále vytvoří tajné 4místné číslo (číslice musí být unikátní a nesmí začínat 0) hráč hádá číslo.
-    Program jej upozorní, pokud zadá číslo kratší nebo delší než 4 čísla, pokud bude obsahovat duplicity,
-    začínat nulou, příp. obsahovat nečíselné znaky,"""
-
 
 def generate_random_4_digit_number():
+    """
+    Generuje nahodne ctyr mistne cislo jako retezec.
+
+    """
     rng_number = random.randint(1000, 9999)
   #    rng_number = str(rng_number)
   #  print("generate_random_4_digit_number:", rng_number)
@@ -59,43 +58,66 @@ def is_unique_number(number):
     #    print("is_unique_number:", number)
         return False
 
-# ofce pro generovani 4 mistneho cisla s unikatnimi cislicemi
+# fce pro generovani 4 mistneho cisla s unikatnimi cislicemi
 def generate_unique_4_digit_number():
-  #    print("Kod se pustil")
-
+    """
+    Pravidla pro hru:
+    - nesmi zacinat 0
+    - 4 mistne
+    """
+  # print("Kod se pustil")
     while True:
         number = generate_random_4_digit_number() # vygeneruje nahodne cislo
         if is_unique_number(number):  # kontrola zda cislo obssahuje uniqe cislice
-        #    print(number, ">> TOTO JE TO CISLO")
+        # print(number, ">> TOTO JE TO CISLO")
             return number # pokud ano, vrati
 
-number_to_guess = generate_unique_4_digit_number()
+NUMBER_LENGTH = 4
 
-"""hráč hádá číslo. Program jej upozorní, pokud zadá číslo kratší nebo delší než 4 čísla,
- pokud bude obsahovat duplicity, začínat nulou, příp. obsahovat nečíselné znaky,"""
-
-"""program dále vypíše počet bull/ bulls (pokud uživatel uhodne jak číslo, tak jeho umístění),
- příp. cows/ cows (pokud uživatel uhodne pouze číslo, ale ne jeho umístění).
- Vrácené ohodnocení musí brát ohled na jednotné a množné číslo ve výstupu.
- Tedy 1 bull a 2 bulls (stejně pro cow/cows).
- 
- bull = spravne cislo na spravnem miste
- cow = spravne cislo na spatnem miste
- """
+def is_valid_guess(guess):
+    """
+    Kontrola že vstup splňuje:
+    - Je to číslo
+    - Má správnou délku
+    - Nezačíná nulou
+    """
+    if not guess.isdigit():
+        print("Invalid input: The guess must be a number.")
+        return False
+    if len(guess) != NUMBER_LENGTH:
+        print(f"Invalid input: The guess must be {NUMBER_LENGTH} digits long.")
+        return False
+    if guess[0] == "0":
+        print("Invalid input: The guess cannot start with 0.")
+        return False
+    return True
 
 # funkce pro zjisteni poctu spravnych cislic (cows) a spravnych mist (bulls)
 def bulls_and_cows(n_guess, p_guess):
-    bulls = 0
-    cows = 0
-    n_guess = str(n_guess) # oboji na string skrz porovani pozic
+    """
+    Parametry:
+    - n_guess: integer/cislo,  ktere ma hrac uhodnout (tajne/magicke cislo)
+    - p_guess: integer/cislo, ktere hrac zadal (jeho hadaci pokus)
+
+    Vystupove hodnoty:
+    - bulls: pocet spravnych cislic na spravnych pozicich
+    - cows: pocet spravnych cislic na spatnych pozicich
+    """
+    bulls = 0 # pocet spravnych cislic na spravnych mistech
+    cows = 0 # pocet spravnyhc cislic na spatnych msitech
+
+    # Prevod obou cisel na retezce pro snazsi porovnavani pozic
+    n_guess = str(n_guess)
     p_guess = str(p_guess)
 
+    #iterace pres vsechny pozice, pro zjisteni poctu bulls/cows
     for i in range(4):
-        if p_guess[i] == n_guess[i]:
+        if p_guess[i] == n_guess[i]: # pokud splneno, pridame k bulls, spravna cislice na spravnem miste
             bulls += 1
-        elif p_guess[i] in n_guess:
+        elif p_guess[i] in n_guess: # pokud splneno, pridame ke cows, spravna cislice na spatnem miste
             cows += 1
 
+    # vypis vylsledku - zohlednuje jednotne a mnozne cislo
     if cows == 1:
         print("Bulls:", bulls, "\tCow:", cows, "\t\tGuesses:", counter)
     elif bulls == 1:
@@ -105,56 +127,66 @@ def bulls_and_cows(n_guess, p_guess):
     else:
         print("Bulls:", bulls, "\tCows:", cows, "\tGuesses:", counter)
 
-    return bulls, cows  
-
-player_guess = str(input("Enter a number: "))
-counter = 0
+    return bulls, cows  # Vraci pocet bulls a cows
 
 
-while player_guess != number_to_guess:
-    # print("debug - hadane cislo je:", number_to_guess) - debug pro kontrolu tajneho cisla
+def main():
+    """
+    Hlavni funkce programu obsahujici logiku hry.
+    """
+    # incicializace promennych
+    global counter
+    counter = 0
+    number_to_guess = generate_unique_4_digit_number()
+    player_guess = str(input("Enter a number: "))
+    start_time = 0  # Inicializace proměnné start_time
 
-    if player_guess.isdigit() and len(player_guess) == 4 and is_unique_number(player_guess) == True and player_guess[0] != "0":
-        # print(player_guess[0])
-        # print("OK - Your guess is in valid format")
-        counter += 1
-        # Začátek časovače
-        if start_time is None:
-            start_time = time.time()
+    while player_guess != number_to_guess:
+        print("debug - hadane cislo je:", number_to_guess) #- debug pro kontrolu tajneho cisla
+        if is_valid_guess(player_guess):
+            counter += 1
 
-        if str(player_guess) == str(number_to_guess):
-            print("\n >>> Winner winner chicken dinner, you guessed the number! <<<")
-            # Konec časovače
-            end_time = time.time()
-            duration_time = round(end_time - start_time, 3)
-            start_time = None # resetovani casovace - jinak to pocita dal pri "y" na dalsi hru
+            # Začátek časovače
+            if start_time is None or start_time == 0:
+                start_time = time.time()
 
-            print("Results!\nTime:", duration_time, "seconds, \tAttempts:", counter, "\n")
-            player_name = str(input("Enter your name: "))
+            if str(player_guess) == str(number_to_guess):
+                print("\n >>> Winner winner chicken dinner, you guessed the number! <<<")
+                # Konec časovače
+                end_time = time.time()
+                duration_time = round(end_time - start_time, 3)
+                start_time = None # resetovani casovace - jinak to pocita dal pri "y" na dalsi hru
 
-            save_record(player_name, duration_time, counter)
+                print("Results!\nTime:", duration_time, "seconds, \tAttempts:", counter, "\n")
+                player_name = str(input("Enter your name: "))
 
-            play_again = input("Do you want to play again? [y/n]:")
+                save_record(player_name, duration_time, counter)
 
-            if play_again == "y":
-                counter = 0
-                bulls = 0
-                cows = 0
-                number_to_guess = generate_unique_4_digit_number()
-                player_guess = str(input("\nEnter a number: "))
-            else:
-                print("Goodbye!")
-                break
+                play_again = input("Do you want to play again? [y/n]:")
 
-        elif str(player_guess) != str(number_to_guess):
-            bulls, cows = bulls_and_cows(n_guess=number_to_guess, p_guess=player_guess)
-            player_guess = str(input("\nEnter a next guess: "))
+                if play_again == "y":
+                    counter = 0
+                    bulls = 0
+                    cows = 0
+                    number_to_guess = generate_unique_4_digit_number()
+                    player_guess = str(input("\nEnter a number: "))
+                else:
+                    print("Goodbye!")
+                    break
 
-    else:
-        print("Did you type 4 digits number with unique digits? - Try again!", "debug - hadane cislo je:", number_to_guess)
-        player_guess = str(input("Enter a number: "))
+            elif str(player_guess) != str(number_to_guess):
+                bulls, cows = bulls_and_cows(n_guess=number_to_guess, p_guess=player_guess)
+                player_guess = str(input("\nEnter a next guess: "))
 
+        else:
+        # print("Did you type 4 digits number with unique digits? - Try again!", "debug - hadane cislo je:", number_to_guess)
+            player_guess = str(input("Enter a number: "))
+
+
+if __name__ == "__main__":
+    main()
 
 """
 1. počítání času, za jak dlouho uživatel uhádne tajné číslo
-2. uchovávat statistiky počtu odhadů jednotlivých her"""
+2. uchovávat statistiky počtu odhadů jednotlivých her
+"""
